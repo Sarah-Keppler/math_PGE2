@@ -1,0 +1,129 @@
+#!/usr/bin/python3
+import sys
+import math
+import time
+
+
+def print_help():
+    print("USAGE")
+    print("\t./203hotline [n k | d]")
+    print("DESCRIPTION")
+    print("\tn \tn value for the computation of(nk)")
+    print("\tk \tk value for the computation of(nk)")
+    print("\td \taverage duration of calls (in seconds)")
+
+
+argument_tab = list()
+
+
+def fact(n):
+    num = 1
+    while n >= 1:
+        num = num * n
+        n = n - 1
+    return num
+
+
+def calc_combination(var, second_var):
+    result = fact(var) // (fact(second_var) * fact(var - second_var))
+    print(str(second_var) + "-combination of a", var, "set:")
+    print(result)
+
+
+def fact_second(n, k):
+    i = k
+    ret = 1
+    while i > (k - n):
+        ret = ret * i
+        i -= 1
+    return ret / fact(n)
+
+
+def calc_bino():
+    print("Binomial distribution:")
+    find_sample = (((argument_tab[0] / 3600.0) * 3500.0) / 8) / 3500
+    distrib = []
+    res = 0
+    start_time = time.time()
+    for off in range(0, 51):
+        tmp = fact_second(off, 3500) * (find_sample ** off) * (1.0 - find_sample) ** (3500 - off)
+        if off <= 25:
+            res += tmp
+        distrib.append(tmp)
+    i = 0
+    for value in distrib:
+        print(i, " -> %.3f" % value, end='')
+        if i % 6 == 5 or i == 50:
+            print("\n", end='')
+        else:
+            print("\t", end='')
+        i += 1
+    print("overload: %.01f" % ((1 - res) * 100), end='')
+    print("%")
+    print("computation time: %.02f" % ((time.time() - start_time) * 1000) + "ms")
+    print()
+    calc_poisson()
+
+
+def calc_poisson():
+    print("Poisson distribution:")
+    find_sample = ((argument_tab[0] / 3600.0) * 3500.0) / 8
+    distrib = []
+    res = 0
+    start_time = time.time()
+    for off in range(0, 51):
+        tmp = (pow(find_sample, off) * math.exp(-find_sample)) / fact(off)
+        if off <= 25:
+            res += tmp
+        distrib.append(tmp)
+    i = 0
+    for value in distrib:
+        print(i, " -> %.3f" % value, end='')
+        if i % 6 == 5 or i == 50:
+            print("\n", end='')
+        else:
+            print("\t", end='')
+        i += 1
+    print("overload: %.01f" % ((1 - res) * 100), end='')
+    print("%")
+    print("computation time: %.02f" % ((time.time() - start_time) * 1000) + "ms")
+
+
+def parse_combinatoire(first_argument, second_argument):
+    try:
+        argument_tab.append(int(first_argument))
+        argument_tab.append(int(second_argument))
+    except ValueError:
+        exit(84)
+    if argument_tab[0] <= 0 or argument_tab[1] <= 0:
+        exit(84)
+    if argument_tab[0] < argument_tab[1]:
+        exit(84)
+
+
+def parse_binomial(first_argument):
+    try:
+        argument_tab.append(int(first_argument))
+    except ValueError:
+        exit(84)
+    if argument_tab[0] <= 0:
+        exit(84)
+
+def main():
+    if len(sys.argv) is 1:
+        exit(84)
+    if sys.argv[1] == "-h" or len(sys.argv) not in [2, 3]:
+        print_help()
+        exit(84)
+    if len(sys.argv) == 3:
+        parse_combinatoire(sys.argv[1], sys.argv[2])
+        calc_combination(argument_tab[0], argument_tab[1])
+    elif len(sys.argv) == 2:
+        parse_binomial(sys.argv[1])
+        calc_bino()
+    else:
+        exit(84)
+
+
+if __name__ == "__main__":
+    main()

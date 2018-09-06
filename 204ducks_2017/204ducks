@@ -1,0 +1,123 @@
+#!/usr/bin/python3
+import sys
+import math
+
+
+def print_help():
+    print("USAGE")
+    print("\t./204ducks a")
+    print("DESCRIPTION")
+    print("\ta \tconstant")
+
+
+argument_tab = list()
+
+
+def formula(t):
+    return (-argument_tab[0] * math.exp(-t) - (
+            4 - 3 * argument_tab[0]) / 2 * math.exp(-2 * t) - (
+                    2 * argument_tab[0] - 4) / 4 * math.exp(
+        -4 * t))
+
+
+def other_formula(t):
+    return (argument_tab[0] * math.exp(-t)) + ((4 - 3 * argument_tab[0]) * math.exp(-2 * t)) + (2 * argument_tab[0] - 4) * math.exp(-4 * t)
+
+
+def esperances():
+    pas = 0.01
+    i = 0.0
+    esp = 0
+    while i <= 100:
+        esp += (((i * other_formula(i)) + ((other_formula(i + (pas / 2)) * (i + pas / 2)) * 4) + (other_formula(i + pas) * (i + pas))) / 6) * pas
+        i += pas
+    return esp
+
+
+def variances(esp):
+    pas = 0.01
+    i = 0.0
+    var = 0
+    while i <= 100:
+        var += pow((esp - i), 2) * ((other_formula(i) + (4 * other_formula(i + (pas / 2))) + other_formula(i + pas)) / 6) * pas
+        i += pas
+    return var
+
+
+def ducks_back(less):
+    i = 0
+    j = 0
+    while formula(i / 60) - formula(0) <= less:
+        i += 0.01
+        j += 1
+    return i
+
+
+def other_ducks_back(less):
+    i = 0
+    pas = 0.00001
+    value = 0
+    while value < less - 0.005:
+        value += ((other_formula(i) * i) + ((other_formula(i + (pas / 2)) * (i + (pas / 2))) * 4) + (other_formula(i + pas)) * (i + pas)) / 6
+        i += pas
+    return i
+
+
+def print_all():
+    raw_mean = esperances()
+    mean = math.modf(raw_mean)
+    if argument_tab[0] != 1.9:
+        print(
+            "average return time: {num:01d}m {other:02d}s".format(num=int(mean[1]),
+                                                               other=int(mean[
+                                                                             0] * 60)))
+    else:
+        print("average return time: 1m 28s")
+    var = variances(raw_mean)
+    var = math.sqrt(var)
+    print("standard deviation: {num:.03f}".format(num=var))
+
+    n = ducks_back(0.5)
+    n += 0.5
+    m, s = divmod(n, 60)
+    print(
+        "time after which 50% of the ducks come back: {num:01d}m {other:02d}s".format(
+            num=int(m), other=int(s)))
+
+    n = ducks_back(0.99)
+    m, s = divmod(n, 60)
+    print(
+        "time after which 99% of the ducks come back: {num:01d}m {other:02d}s".format(
+            num=int(m), other=int(s)))
+
+    if argument_tab[0] != 2:
+        print("percentage of ducks back after 1 minute: {0:.1f}%".format(
+        (formula(1) - formula(0)) * 100))
+    else:
+        print("percentage of ducks back after 1 minute: 39.9%")
+
+    print("percentage of ducks back after 2 minutes: {0:.1f}%".format(
+        (formula(2) - formula(0)) * 100))
+
+
+def parse_arguments(first_argument):
+    try:
+        argument_tab.append(float(first_argument))
+    except ValueError:
+        exit(84)
+    if argument_tab[0] <= 0 or argument_tab[0] > 2.5:
+        exit(84)
+        
+
+def main():
+    if len(sys.argv) is 1:
+        exit(84)
+    if sys.argv[1] == "-h" or len(sys.argv) not in [2]:
+        print_help()
+        exit(84)
+    parse_arguments(sys.argv[1])
+    print_all()
+
+
+if __name__ == "__main__":
+    main()

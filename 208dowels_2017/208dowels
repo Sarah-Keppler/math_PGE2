@@ -1,0 +1,202 @@
+#!/usr/bin/python3
+# coding=utf-8
+import sys
+import math
+
+distribution_data = [[0, [99, 90, 80, 70, 60, 50, 40, 30, 20, 10, 5, 2, 1]],
+                     [1, [0.00, 0.02, 0.06, 0.15, 0.27, 0.45, 0.71, 1.07, 1.64, 2.71, 3.84, 5.41, 6.63]],
+                     [2, [0.02, 0.21, 0.45, 0.71, 1.02, 1.39, 1.83, 2.41, 3.22, 4.61, 5.99, 7.82, 9.21]],
+                     [3, [0.11, 0.58, 1.01, 1.42, 1.87, 2.37, 2.95, 3.66, 4.64, 6.25, 7.81, 9.84, 11.35]],
+                     [4, [0.30, 1.06, 1.65, 2.19, 2.75, 3.36, 4.04, 4.88, 5.99, 7.78, 9.49, 11.67, 13.28]],
+                     [5, [0.55, 1.61, 2.34, 3.00, 3.66, 4.35, 5.13, 6.06, 7.29, 9.24, 11.07, 13.33, 15.01]],
+                     [6, [0.70, 2.20, 3.07, 3.83, 4.57, 5.35, 6.21, 7.23, 8.56, 10.64, 12.59, 15.03, 16.81]],
+                     [7, [1.24, 2.83, 3.82, 4.67, 5.49, 6.35, 7.28, 8.38, 9.80, 12.02, 14.07, 16.62, 18.48]],
+                     [8, [1.65, 3.49, 4.59, 5.53, 6.42, 7.34, 8.35, 9.52, 11.03, 13.36, 15.51, 18.17, 20.09]],
+                     [9, [2.09, 4.17, 5.38, 6.39, 7.36, 8.34, 9.41, 10.66, 12.24, 14.68, 16.92, 19.63, 21.67]],
+                     [10, [2.56, 4.87, 6.18, 7.27, 8.30, 9.34, 10.47, 11.78, 13.44, 15.99, 18.31, 21.16, 23.21]]]
+
+
+def print_help():
+    print("USAGE")
+    print("\t./208dowels O0 O1 O2 O3 O4 O5 O6 O7 O8+")
+    print("DESCRIPTION")
+    print("\tOi\tsize of the observed class")
+    exit(84)
+
+
+input_value = []
+result = []
+theoric_value = []
+
+def parse_arguments():
+    i = 0
+    for value in sys.argv[1:]:
+        try:
+            buff = int(value)
+            if buff < 0:
+                print("Error: Value must be positive")
+            input_value.append(buff)
+        except ValueError:
+            print_help()
+        result.append(i)
+        i += 1
+    if sum(input_value) != 100:
+        print("Error: sum of input should be 100")
+        exit(84)
+
+
+def verif_my_tab(tab):
+    for t in tab:
+        if t < 10:
+            return 0
+    return 1
+
+def left_borne(index):
+    input_value[index] += input_value[index + 1]
+    input_value.remove(input_value[index + 1])
+
+    result[index] = str(result[index]) + "-" + str(result[index + 1])
+    result.remove(result[index + 1])
+    theoric_value[index] += theoric_value[index + 1]
+    theoric_value.remove(theoric_value[index + 1])
+
+def right_borne(index):
+    input_value[index] += input_value[index - 1]
+    input_value.remove(input_value[index - 1])
+
+    result[index] = str(result[index - 1]) + "-" + str(result[index])
+    result.remove(result[index - 1])
+    theoric_value[index] += theoric_value[index - 1]
+    theoric_value.remove(theoric_value[index - 1])
+
+def middle_left_borne(index):
+    input_value.remove(input_value[index - 1])
+
+    result[index] = str(result[index - 1]) + "-" + str(result[index])
+    result.remove(result[index - 1])
+    theoric_value[index] += theoric_value[index - 1]
+    theoric_value.remove(theoric_value[index - 1])
+
+def middle_right_borne(index):
+    input_value.remove(input_value[index + 1])
+
+    result[index] = str(result[index]) + "-" + str(result[index + 1])
+    result.remove(result[index + 1])
+    theoric_value[index] += theoric_value[index + 1]
+    theoric_value.remove(theoric_value[index + 1])
+
+
+def regroup_stats():
+    while verif_my_tab(input_value) != 1:
+        for index, value in enumerate(input_value):
+            if value < 10:
+                if index == 0:
+                    left_borne(index)
+                elif index == (len(input_value) - 1):
+                    right_borne(index)
+                else:
+                    buff = min(input_value[index - 1], input_value[index + 1])
+                    input_value[index] += buff
+                    if buff == input_value[index - 1]:
+                        middle_left_borne(index)
+                    else:
+                        middle_right_borne(index)
+
+def  clean_tab():
+    for index, value in enumerate(result):
+        buff = str(value).split('-')
+        if len(buff) > 1:
+            result[index] = buff[0] + "-" + buff[len(buff) - 1]
+    result[len(result) - 1] = (str(result[len(result) - 1]).split('-'))[0] + "+"
+
+
+def calc_probability():
+    proba = 0
+    i = 0
+    for value in input_value:
+        proba += i * value
+        i += 1
+    proba /= 10000
+    return proba
+
+
+def display_tab(tab_index, sum_data, theoric_value):
+    print("\tx", end='')
+    for value in tab_index:
+        print("\t|\t", str(value), end="")
+    print("\t|\t", end='')
+    print("total".center(8, ' '))
+
+    print("\tOx".center(8, ' '), end='')
+    for value in sum_data:
+        print("\t|\t", str(value), end="")
+    print("\t|\t", end='')
+    print("100".center(8, ' '))
+
+    print("\tTx", end='')
+    for value in theoric_value:
+        print("\t|\t", "%.01f" % value, end="")
+    print("\t|\t", end='')
+    print("100".center(8, ' '))
+
+
+def fact_second(n, k):
+    i = n
+    ret = 1
+    while i > k:
+        ret = ret * i
+        i -= 1
+    return ret
+
+
+def calc_theoric_value(data, probability):
+    index = 0
+    for _ in data:
+        new_data = pow(probability, index) * pow(1 - probability, 100 - index) * (fact_second(100, 100 - index) / math.factorial(index)) * 100
+        theoric_value.append(new_data)
+        index += 1
+
+
+def sum_of_square():
+    res = 0.0
+    for i in range(len(input_value)):
+        res += pow((input_value[i] - theoric_value[i]), 2) / theoric_value[i]
+    return res
+
+
+def fit_validity(freedom_value, value_square):
+    data = distribution_data[freedom_value][1]
+    if value_square <= data[0]:
+        return "P>99%"
+    if value_square >= data[12]:
+        return "P<1%"
+    for i in range(len(data)):
+        if data[i] > value_square:
+            left_close = i - 1
+            right_close = i
+            return str(distribution_data[0][1][right_close]) + "%<P<" + str(distribution_data[0][1][left_close]) + "%"
+
+def main():
+    if len(sys.argv) < 3:
+        print_help()
+    if len(sys.argv) is not 10:
+        print_help()
+    if "-h" in sys.argv:
+        print_help()
+    parse_arguments()
+    probability_distribution = calc_probability()
+    calc_theoric_value(input_value, probability_distribution)
+    regroup_stats()
+    theoric_value[-1] = (100 - sum(theoric_value[:-1]))
+    clean_tab()
+    display_tab(result, input_value, theoric_value)
+    print("distribution:\t\tB(100, %.04f)" % probability_distribution)
+    value_square = sum_of_square()
+    print("sum of square differences:\t%.03f" % value_square)
+    freedom_value = len(theoric_value) - 2
+    print("freedom value:\t\t" + str(freedom_value))
+    print("fit validity:\t\t" + fit_validity(freedom_value, value_square))
+
+
+if __name__ == "__main__":
+    main()

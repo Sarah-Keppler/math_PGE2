@@ -1,0 +1,201 @@
+#!/usr/bin/python3
+# coding=utf-8
+import sys
+import math
+import csv
+import matplotlib.pyplot as plt
+
+list_of_unicode = ['Country Code', 'ARB', 'CSS', 'EAS', 'EAP', 'EMU', 'ECS',
+                   'ECA', 'EUU', 'HPC', 'HIC', 'NOC', 'OEC', 'LCN', 'LAC',
+                   'LDC', 'LMY', 'LIC', 'LMC', 'MEA', 'MNA', 'MIC', 'NAC',
+                   'INX', 'OED', 'OSS', 'PSS', 'SST', 'SAS', 'SSF', 'SSA',
+                   'UMC', 'WLD', 'AFG', 'ALB', 'DZA', 'ASM', 'AND', 'AGO',
+                   'ATG', 'ARG', 'ARM', 'ABW', 'AUS', 'AUT', 'AZE', 'BHS',
+                   'BHR', 'BGD', 'BRB', 'BLR', 'BEL', 'BLZ', 'BEN', 'BMU',
+                   'BTN', 'BOL', 'BIH', 'BWA', 'BRA', 'BRN', 'BGR', 'BFA',
+                   'BDI', 'KHM', 'CMR', 'CAN', 'CPV', 'CYM', 'CAF', 'TCD',
+                   'CHI', 'CHL', 'CHN', 'COL', 'COM', 'COD', 'COG', 'CRI',
+                   'CIV', 'HRV', 'CUB', 'CUW', 'CYP', 'CZE', 'DNK', 'DJI',
+                   'DMA', 'DOM', 'ECU', 'EGY', 'SLV', 'GNQ', 'ERI', 'EST',
+                   'ETH', 'FRO', 'FJI', 'FIN', 'FRA', 'PYF', 'GAB', 'GMB',
+                   'GEO', 'DEU', 'GHA', 'GRC', 'GRL', 'GRD', 'GUM', 'GTM',
+                   'GIN', 'GNB', 'GUY', 'HTI', 'HND', 'HKG', 'HUN', 'ISL',
+                   'IND', 'IDN', 'IRN', 'IRQ', 'IRL', 'IMN', 'ISR', 'ITA',
+                   'JAM', 'JPN', 'JOR', 'KAZ', 'KEN', 'KIR', 'PRK', 'KOR',
+                   'KSV', 'KWT', 'KGZ', 'LAO', 'LVA', 'LBN', 'LSO', 'LBR',
+                   'LBY', 'LIE', 'LTU', 'LUX', 'MAC', 'MKD', 'MDG', 'MWI',
+                   'MYS', 'MDV', 'MLI', 'MLT', 'MHL', 'MRT', 'MUS', 'MEX',
+                   'FSM', 'MDA', 'MCO', 'MNG', 'MNE', 'MAR', 'MOZ', 'MMR',
+                   'NAM', 'NPL', 'NLD', 'NCL', 'NZL', 'NIC', 'NER', 'NGA',
+                   'MNP', 'NOR', 'OMN', 'PAK', 'PLW', 'PAN', 'PNG', 'PRY',
+                   'PER', 'PHL', 'POL', 'PRT', 'PRI', 'QAT', 'ROU', 'RUS',
+                   'RWA', 'WSM', 'SMR', 'STP', 'SAU', 'SEN', 'SRB', 'SYC',
+                   'SLE', 'SGP', 'SXM', 'SVK', 'SVN', 'SLB', 'SOM', 'ZAF',
+                   'SSD', 'ESP', 'LKA', 'KNA', 'LCA', 'MAF', 'VCT', 'SDN',
+                   'SUR', 'SWZ', 'SWE', 'CHE', 'SYR', 'TJK', 'TZA', 'THA',
+                   'TLS', 'TGO', 'TON', 'TTO', 'TUN', 'TUR', 'TKM', 'TCA',
+                   'TUV', 'UGA', 'UKR', 'ARE', 'GBR', 'USA', 'URY', 'UZB',
+                   'VUT', 'VEN', 'VNM', 'VIR', 'PSE', 'YEM', 'ZMB', 'ZWE']
+
+
+def print_help():
+    print("USAGE")
+    print("\t./207demography code1 [...]")
+    print("DESCRIPTION")
+    print("\tcode1\tcountry code")
+
+
+list_of_country = []
+country = []
+
+year_data = [val for val in range(1961, 2012)]
+
+
+def parse_arguments():
+    for i in range(1, len(sys.argv)):
+        if sys.argv[i] not in list_of_unicode:
+            print("Expected a contry code like : FRA, etc")
+            exit(84)
+        list_of_country.append(sys.argv[i])
+
+
+def readFile():
+    to_fill = [0] * 51
+    with open('207demography_data.csv') as csvfile:
+        file = csv.reader(csvfile, delimiter=';')
+        for row in file:
+            if row[1] in list_of_country:
+                to_fill = setData(row, to_fill)
+    return to_fill
+
+
+# list_of_data is a list of valid data by country form the csv
+def setData(all_my_data, to_fill):
+    country.append(all_my_data.pop(0))
+    all_my_data.pop(0)
+    all_my_data = [int(x) for x in all_my_data]
+    for i in range(0, 51):
+        to_fill[i] += all_my_data[i] / 1000000
+    return to_fill
+
+
+def calc_standard_deviation(data, mean):
+    return math.sqrt((sum((x - mean) ** 2 for x in data)) / len(data))
+
+
+def calc_covariance(data, mean_data):
+    res = 0
+    year = 1961
+    mean_year = 1986.5
+    for i in data:
+        res += (float(i) - mean_data) * (year - mean_year)
+        year += 1
+    return res / len(data)
+
+
+def calc_variance(sd):
+    return sd ** 2
+
+
+#  pour temps et population
+def calc_coefficient_directeur(covariance, variance):
+    return covariance / variance
+
+
+def cal_origin(coef, mean_1, mean_2):
+    return mean_2 - mean_1 * coef
+
+
+def cal_theoric_value(data, coefficient, origin):
+    theoric_data = []
+    for value in data:
+        theoric_data.append(value * coefficient + origin)
+    return theoric_data
+
+
+def cal_second_theoric_value(data, coefficient, origin):
+    theoric_data = []
+    for value in data:
+        theoric_data.append((value - origin) / coefficient)
+    return theoric_data
+
+
+def calc_strange_sd(data, year_data, coefficient_directeur, origin):
+    my_sum = 0
+    for i in range(len(data)):
+        my_sum += (data[i] - (year_data[i] * coefficient_directeur + origin)) ** 2
+    return math.sqrt(my_sum / len(data))
+
+
+def calc_other_strange_sd(data, year, coefficient_directeur, origin):
+    my_sum = 0
+    for i in range(len(data)):
+        my_sum += (data[i] - ((year[i] - origin) / coefficient_directeur)) ** 2
+    return math.sqrt(my_sum / len(data))
+
+
+def do_math_and_print(pop_data, country, bonus):
+    mean_year = sum(year_data) / len(year_data)
+    sd_year = calc_standard_deviation(year_data, mean_year)
+    var_year = calc_variance(sd_year)
+
+    mean_pop = sum(pop_data) / len(pop_data)
+    sd_pop = calc_standard_deviation(pop_data, mean_pop)
+    var_pop = calc_variance(sd_pop)
+
+    covariance = calc_covariance(pop_data, mean_pop)
+
+    coefficient_directeur_year = calc_coefficient_directeur(covariance, var_year)
+    origin_year = cal_origin(coefficient_directeur_year, mean_year, mean_pop)
+
+    coefficient_directeur_pop = calc_coefficient_directeur(covariance, var_pop)
+    origin_pop = cal_origin(coefficient_directeur_pop, mean_pop, mean_year)
+
+    print("country : ", ", ".join(country))
+
+    print("fit 1")
+    if origin_year < 0:
+        print("\tY = %.02f X - %.02f" % (coefficient_directeur_year, origin_year * (-1)))
+    else:
+        print("\tY = %.02f X + %.02f" % (coefficient_directeur_year, origin_year))
+    print("\tstandard deviation:\t %.02f" % calc_strange_sd(pop_data, year_data, coefficient_directeur_year, origin_year))
+    print("\tpopulation in 2050:\t%.02f" % (coefficient_directeur_year * 2050 + origin_year))
+
+    print("fit 2")
+    if origin_pop < 0:
+        print("\tX = %.02f Y - %.02f" % (coefficient_directeur_pop, origin_pop * (-1)))
+    else:
+        print("\tX = %.02f Y + %.02f" % (coefficient_directeur_pop, origin_pop))
+    print("\tstandard deviation:\t %.02f" % (calc_other_strange_sd(pop_data, year_data, coefficient_directeur_pop, origin_pop)))
+    print("\tpopulation in 2050:\t%.02f" % ((2050 - origin_pop) / coefficient_directeur_pop))
+    print("correlation: %.04f" % (math.sqrt(coefficient_directeur_pop * coefficient_directeur_year)))
+
+    theoric_data = cal_theoric_value(year_data, coefficient_directeur_year, origin_year)
+
+    if bonus:
+        plt.title("Demography of " + ", ".join(country))
+        plt.plot(pop_data)
+        plt.plot(theoric_data)
+        plt.xlabel("Year")
+        plt.ylabel("Population in million")
+        plt.show()
+
+
+def main():
+    if len(sys.argv) <= 1:
+        print("Not enough argument")
+        exit(84)
+    bonus = False
+    if sys.argv[-1] == "-b":
+        bonus = True
+        sys.argv = sys.argv[:-1]
+    if "-h" in sys.argv:
+        print_help()
+        exit(84)
+    parse_arguments()
+    raw_data = readFile()
+    do_math_and_print(raw_data, country, bonus)
+
+
+if __name__ == "__main__":
+    main()

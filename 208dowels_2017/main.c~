@@ -1,0 +1,12 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+
+int main()
+{
+	char buf[] = "TEST";
+
+	int fd = open("rext.txt", 0_RDONLY);
+	write(fd, buf, strlen(buf));
+}

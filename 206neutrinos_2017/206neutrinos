@@ -1,0 +1,150 @@
+#!/usr/bin/python3
+# coding=utf-8
+import sys
+import math
+
+
+def print_help():
+    print("USAGE")
+    print("\t./206neutrinos n a h sd")
+    print("DESCRIPTION")
+    print("\tn\tnumber of values")
+    print("\ta\tarithmetic mean")
+    print("\th\tharmonic mean")
+    print("\tsd\tstandard deviation")
+
+
+number_of_values = 0
+arithmetic_mean = 0
+harmonic_mean = 0
+standard_deviation = 0
+initial_sd = 0
+
+
+def arithmetic_mean_calc(new_value):
+    global arithmetic_mean
+    global number_of_values
+    arithmetic_mean = ((number_of_values - 1) * arithmetic_mean + float(new_value)) / number_of_values
+
+
+def standard_deviation_calc(new_value, sum_of_square):
+    global arithmetic_mean
+    global number_of_values
+    global standard_deviation
+    print(arithmetic_mean)
+    standard_deviation = math.sqrt(((sum_of_square + pow(float(new_value), 2)) / number_of_values) - pow(arithmetic_mean, 2))
+
+
+def root_mean_calc(new_value, sum_of_square):
+    global arithmetic_mean
+    global number_of_values
+    return math.sqrt((sum_of_square + pow(float(new_value), 2)) / (number_of_values))
+
+
+def harmonic_mean_calc(new_value):
+    global harmonic_mean
+    global number_of_values
+    harmonic_mean = number_of_values / ((1 / float(new_value)) + ((number_of_values - 1) / harmonic_mean))
+
+
+def check_zero():
+    global arithmetic_mean
+    global harmonic_mean
+    global standard_deviation
+    if arithmetic_mean != 0 or harmonic_mean != 0 or standard_deviation != 0:
+        exit(84)
+
+
+def parse_arguments():
+    global number_of_values
+    global arithmetic_mean
+    global harmonic_mean
+    global standard_deviation
+    global initial_sd
+    try:
+        number_of_values = int(sys.argv[1])
+        if number_of_values < 0:
+            print("the number of value should be positive")
+            exit(84)
+        arithmetic_mean = float(sys.argv[2])
+        if arithmetic_mean <= 0:
+            exit(84)
+        harmonic_mean = float(sys.argv[3])
+        if harmonic_mean <= 0:
+            print("harmonic mean is normaly different of 0")
+            exit(84)
+        standard_deviation = float(sys.argv[4])
+        if standard_deviation < 0:
+            print("the stantard deviation should be positive")
+            exit(84)
+    except ValueError:
+        print("Arguments should be int or float value")
+        exit(84)
+    if number_of_values == 0:
+        check_zero()
+    initial_sd = standard_deviation
+
+
+def my_loop():
+    new_value = 0
+    global number_of_values
+    global arithmetic_mean
+    global harmonic_mean
+    global standard_deviation
+    global initial_sd
+    while True:
+        try:
+            new_value = input("indtast din vaerdi : ")
+            if new_value == "ENDE":
+                exit(0)
+            float(new_value)
+            if float(new_value) == 0:
+                my_loop()
+        except ValueError:
+            my_loop()
+        except KeyboardInterrupt:
+            exit(0)
+
+        number_of_values += 1
+
+        if number_of_values == 1:
+            arithmetic_mean = float(new_value)
+            harmonic_mean = float(new_value)
+            standard_deviation = 0
+            root_mean_square = float(new_value)
+        else:
+            sum_of_square = (pow(standard_deviation, 2) + pow(arithmetic_mean, 2)) * (number_of_values - 1)
+            print(standard_deviation)
+            print(arithmetic_mean)
+            print(number_of_values)
+            print(sum_of_square)
+            arithmetic_mean_calc(new_value)
+            harmonic_mean_calc(new_value)
+            standard_deviation_calc(new_value, sum_of_square)
+            root_mean_square = root_mean_calc(new_value, sum_of_square)
+
+        print("\tantal mãlinder :\t%d" % number_of_values)
+        print("\tstandardafvilgelse :\t%.2f" % standard_deviation)
+        print("\taritmetisk gennemsnit :\t%.2f" % arithmetic_mean)
+        print("\tkvadratisk gennemsnit :\t%.2f" % root_mean_square)
+        print("\tharmonisk gennemsnit :\t%.2f" % harmonic_mean)
+        print()
+
+
+def main():
+    global number_of_values
+    global arithmetic_mean
+    global harmonic_mean
+    global standard_deviation
+    if len(sys.argv) <= 1:
+        print("Not enough argument")
+        exit(84)
+    if sys.argv[1] == "-h" or len(sys.argv) not in [5]:
+        print_help()
+        exit(84)
+    parse_arguments()
+    my_loop()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,95 @@
+#!/usr/bin/python3
+# coding=utf-8
+import sys
+import math
+import csv
+
+
+def print_help():
+    print("USAGE")
+    print("\t./209poll pSize sSize p")
+    print("DESCRIPTION")
+    print("\tpSize\tsize of the population")
+    print("\tsSize\tsize of the sample (supposed to be representative)")
+    print("\tp\tpercentage of voting intentions for a specific candidate")
+    exit(84)
+
+
+data = {
+    "population_size": 0,
+    "sample_size": 0,
+    "voting_intention": 0}
+
+
+def print_left_borne(value):
+    if value <= 0:
+        return "0.00"
+    else:
+        return "%.02f" % value
+
+
+def print_right_borne(value):
+    if value >= 100:
+        return "100.00"
+    else:
+        return "%.02f" % value
+    
+
+def parse_arguments():
+    try:
+        data["population_size"] = int(sys.argv[1])
+        if int(sys.argv[1]) < 1:
+            print("Error: pSize should be a positive integer")
+            exit(84)
+    except ValueError:
+        print("Error: pSize should be an integer")
+        exit(84)
+    try:
+        data["sample_size"] = int(sys.argv[2])
+        if int(sys.argv[2]) < 1:
+            print("Error: sSize should be a positive integer")
+            exit(84)
+    except ValueError:
+        print("Error: sSize should be an integer")
+        exit(84)
+    try:
+        data["voting_intention"] = float(sys.argv[3])
+        if data["voting_intention"] < 0 or  data["voting_intention"] > 100:
+            print("Error: p should be a positive float")
+            exit(84)
+    except ValueError:
+        print("Error: voting intention should be a float")
+        exit(84)
+    if data["sample_size"] > data["population_size"]:
+        print("Error: sSize should be less than pSize")
+        exit(84)
+
+
+def main():
+    if len(sys.argv) is not 4:
+        print_help()
+    if "-h" in sys.argv:
+        print_help()
+    parse_arguments()
+    probability = data["voting_intention"] / 100
+    variance = ((probability * (1 - probability)) / data["sample_size"]) * ((data["population_size"] - data["sample_size"]) / (data["population_size"] - 1))
+    p1 = (2 * 1.96 * math.sqrt(variance)) / 2 * 100
+    p2 = (2 * 2.58 * math.sqrt(variance)) / 2 * 100
+    
+    print("population size:\t\t" + str(data["population_size"]))
+    print("sample size:\t\t\t" + str(data["sample_size"]))
+    
+    if data["voting_intention"].is_integer():
+        print("voting intention:\t\t%d" % data["voting_intention"] + "%")
+    else:
+        print("voting intention:\t\t" + str(data["voting_intention"]) + "%")
+
+    print("variance:\t\t\t%.06f" % variance)
+    
+    print("95% confidence interval:\t[" + print_left_borne((probability * 100) - p1) + "% ; " + print_right_borne((probability * 100) + p1) + "%]")
+    
+    print("99% confidence interval:\t[" + print_left_borne((probability * 100) - p2) + "% ; " + print_right_borne((probability * 100) + p2) + "%]")
+
+
+if __name__ == "__main__":
+    main()

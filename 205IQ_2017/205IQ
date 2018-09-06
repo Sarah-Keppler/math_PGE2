@@ -1,0 +1,119 @@
+#!/usr/bin/python3
+# coding=utf-8
+import sys
+import math
+
+
+def print_help():
+    print("USAGE")
+    print("\t./205IQ μ σ [IQ1] [IQ2]")
+    print("DESCRIPTION")
+    print("\tμ\tpredetermined mean")
+    print("\tσ\tpredetermined standard deviation")
+    print("\tIQ1\tminimum IQ")
+    print("\tIQ2\tmaximum IQ")
+
+
+def formula(mean, standard_deviation, i):
+    return (1 / (standard_deviation * math.sqrt(2 * math.pi))) * math.exp(
+        -(i - mean) ** 2 / (2 * standard_deviation ** 2))
+
+
+def get_iq_list(mean, standard_deviation):
+    i = 0
+    while i < 200:
+        res = formula(mean, standard_deviation, i)
+        print("%d %.2f" % (i, res * 100))
+        i += 1
+
+
+def simpson_one(mean, standard_deviation, less):
+    res = 0
+    i = 0
+    while i < less:
+        res += (formula(mean, standard_deviation, i) +
+                4 * formula(mean, standard_deviation, i + 0.5) +
+                formula(mean, standard_deviation, i + 1)) / 6
+        i += 1
+    return res * 100
+
+
+def simpson_two(mean, standard_deviation, less, more):
+    i = 0
+    res = 0
+    while i < less:
+        res += (formula(mean, standard_deviation, i) +
+                4 * formula(mean, standard_deviation, i + 0.5) +
+                formula(mean, standard_deviation, i + 1)) / 6
+        i += 1
+    i = 0
+    ret = 0
+    while i < more:
+        ret += (
+                       formula(mean, standard_deviation, i) +
+                       4 * formula(mean, standard_deviation, i + 0.5) +
+                       formula(mean, standard_deviation, i + 1)
+               ) / 6
+        i += 1
+    return (ret - res) * 100
+
+
+def output_three_arguments(mean, standard_deviation, first_iq):
+    print("%.1f%% of people have an IQ inferior to %d" % (
+    simpson_one(mean, standard_deviation, first_iq), first_iq))
+
+
+def output_four_arguments(mean, standard_deviation, first_iq, second_iq):
+    print("%.1f%% of people have an IQ between %d and %d" % (
+    simpson_two(mean, standard_deviation, first_iq, second_iq), first_iq,
+    second_iq))
+
+
+def parse_arguments():
+    mean = 0
+    standard_deviation = 0
+    first_iq = 0
+    second_iq = 0
+    try:
+        mean = int(sys.argv[1])
+        if mean <= 0 or mean >= 200:
+            print("mean should be superior to 0")
+            exit(84)
+        standard_deviation = int(sys.argv[2])
+        if standard_deviation <= 0:
+            print("Standard deviation should be superior to 0")
+            exit(84)
+        if len(sys.argv) >= 4:
+            first_iq = int(sys.argv[3])
+            if first_iq <= 0:
+                print("First IQ should be superior to 0")
+                exit(84)
+        if len(sys.argv) >= 5:
+            second_iq = int(sys.argv[4])
+            if second_iq <= 0:
+                print("Second IQ should be superior to 0")
+                exit(84)
+    except ValueError:
+        print("Arguments should be integer")
+        exit(84)
+
+    if len(sys.argv) is 5:
+        output_four_arguments(mean, standard_deviation, first_iq, second_iq)
+    elif len(sys.argv) is 4:
+        output_three_arguments(mean, standard_deviation, first_iq)
+    else:
+        get_iq_list(mean, standard_deviation)
+
+
+def main():
+    if len(sys.argv) <= 1:
+        print("Not enough argument")
+        exit(84)
+    if sys.argv[1] == "-h" or len(sys.argv) not in [3, 4, 5]:
+        print_help()
+        exit(84)
+    parse_arguments()
+
+
+if __name__ == "__main__":
+    main()
