@@ -1,0 +1,237 @@
+#!/usr/bin/python3
+import sys
+
+from math import factorial
+
+
+def print_help():
+    print("USAGE")
+    print("\t./201yams d1 d2 d3 d4 d5 c")
+    print("DESCRIPTION")
+    print("\td1 \tvalue of the first die (0 if not thrown)")
+    print("\td2 \tvalue of the second die (0 if not thrown)")
+    print("\td3 \tvalue of the third die (0 if not thrown)")
+    print("\td4 \tvalue of the fourth die (0 if not thrown)")
+    print("\td5 \tvalue of the fifth die (0 if not thrown)")
+    print("\tc \texpected combination")
+
+
+array_of_dice = []
+array_of_value = []
+
+
+def parse_command(command):
+    data = command.split('_')
+    command_type = data[0]
+    if command_type not in ["pair", "three", "four", "full",
+                            "straight", "yams"]:
+        print("Invalid command")
+        exit(84)
+    data = data[1:]
+    if command_type == "full":
+        if len(data) != 2:
+            print("Must have two argument for a full")
+            exit(84)
+    else:
+        if len(data) != 1:
+            print("Must have one arguments for a ", command_type)
+            exit(84)
+    for value in data:
+        try:
+            array_of_value.append(int(value))
+            if command_type == "straight":
+                if int(value) not in [5, 6]:
+                    print("Straight take 5 or 6 as arguments")
+                    exit(84)
+            if int(value) <= 0 or int(value) > 6:
+                print("Cannot have zero as arguments")
+                exit(84)
+            if 0 < int(value) > 6:
+                print("Command arguments is out of range")
+                exit(84)
+        except ValueError:
+            print("Command arguments is not a number")
+            exit(84)
+
+    if command_type == "full":
+        if array_of_value[0] == array_of_value[1]:
+            print("Full must have different arguments")
+            exit(84)
+    return command_type
+
+
+def check_zero():
+    zero = False
+    for value in array_of_dice:
+        if value == 0:
+            zero = True
+    if zero:
+        for value in array_of_dice:
+            if value != 0:
+                print("If there is a zero in your dice, everything must be "
+                      "with zero")
+                exit(84)
+
+
+def argument_parsing():
+    command = ""
+    if len(sys.argv) <= 6 or len(sys.argv) >= 8 or sys.argv[1] == "-h":
+        print_help()
+        exit(84)
+    index = 0
+    for value in sys.argv:
+        if index == 6:
+            val = parse_command(value)
+            command = val
+        elif index >= 1:
+            try:
+                array_of_dice.append(int(value))
+                if 0 < int(value) > 6:
+                    print("Invalid argument range(must be between 0 and 6)")
+                    exit(84)
+            except ValueError:
+                print("Invalid argument number", index + 1)
+                exit(84)
+        index += 1
+    check_zero()
+    return command
+
+
+def binomial(a, b):
+    res = (factorial(a) / (factorial(b) * factorial(a - b))) * \
+          pow(1 / 6, b) *\
+          pow(5 / 6, a - b)
+    print(res)
+    return res
+
+class User():
+    Username = "dasdsad"
+
+
+_usenae = User.Username
+
+tchoin = {
+    'result': _usenae
+}
+
+
+def proba_formula(c, nb):
+    res = 0
+    nb_occurence = array_of_dice.count(int(nb))
+    if nb_occurence >= c:
+        res = 1
+    else:
+        for x in range(c - nb_occurence, 5 - nb_occurence + 1):
+            res += binomial(5 - nb_occurence, x)
+    return res
+
+
+def yams():
+    data = []
+    for value in array_of_dice:
+        if array_of_value[0] != value:
+            data.append(value)
+    print("chances to get a %d yams: %.2f%%" % ((array_of_value[0]), (
+            1 / pow(6, len(data)) * 100)))  # FIXME changer 4 yams en
+
+
+def pair():
+    data = []
+    for value in array_of_dice:
+        if array_of_value[0] != value:
+            data.append(value)
+    print("chances to get a %d pair: %.2f%%" % (
+        (array_of_value[0]), (proba_formula(2, array_of_value[0]) * 100)))
+
+
+def three():
+    data = []
+    for value in array_of_dice:
+        if array_of_value[0] != value:
+            data.append(value)
+    print("chances to get a %d three-of-a-kind: %.2f%%" % (
+        (array_of_value[0]), (proba_formula(3, array_of_value[0]) * 100)))
+
+
+def four():
+    data = []
+    for value in array_of_dice:
+        if array_of_value[0] != value:
+            data.append(value)
+    print("chances to get a %d four-of-a-kind: %.2f%%" % (
+        (array_of_value[0]), (proba_formula(4, array_of_value[0]) * 100)))
+
+
+def full():
+    de1 = 2
+    de2 = 3
+
+    for value in array_of_dice:
+        if value == array_of_value[1]:
+            de1 -= 1
+        if de1 == 0:
+            break
+    for value in array_of_dice:
+        if value == array_of_value[0]:
+            de2 -= 1
+        if de2 == 0:
+            break
+    if de1 > de2:
+        percent = factorial(5 - (2 - de1) - (3 - de2)) / (
+                factorial(de1) * factorial(5 - (2 - de1) - (3 - de2) - de1))
+    else:
+        percent = factorial(5 - (2 - de1) - (3 - de2)) / (
+                factorial(de2) * factorial(5 - (2 - de1) - (3 - de2) - de2))
+    de = de1 + de2
+    while de > 0:
+        percent = percent * (1.0 / 6.0)
+        de -= 1
+    print("chances to get a %d full of %d: %.2f%%" % (
+        (array_of_value[0]), (array_of_value[1]), (percent * 100)))
+
+
+def straight():
+    j = 0
+    if array_of_value[0] == 6:
+        for value in array_of_dice:
+            if 1 < value <= 6:
+                j += 1
+    if array_of_value[0] == 5:
+        for value in array_of_dice:
+            if 0 < value <= 5:
+                j += 1
+    data = []
+    for value in array_of_dice:
+        for duplicate in array_of_dice:
+            if value == duplicate:
+                if value not in data:
+                    data.append(value)
+                else:
+                    j -= 1
+                break
+    if j == 0:
+        ret = ((1 / pow(6, 5)) * factorial(5)) * 100
+    else:
+        ret = ((1 / pow(6, (5 - j))) * factorial(5 - j)) * 100
+    print("chances to get a %d straight: %.2f%%" % (
+        (array_of_value[0]), ret))
+
+
+def main():
+    command = argument_parsing()
+    if command == "yams":
+        yams()
+    elif command == "pair":
+        pair()
+    elif command == "three":
+        three()
+    elif command == "four":
+        four()
+    elif command == "full":
+        full()
+    elif command == "straight":
+        straight()
+
+
+if __name__ == "__main__":
+    main()
